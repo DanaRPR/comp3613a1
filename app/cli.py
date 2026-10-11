@@ -86,6 +86,23 @@ def cmd_seed(args: argparse.Namespace) -> None:
             print(f"  create {username} ({role})")
             created += 1
 
+        from sqlmodel import select
+        from app.models.award import Award
+
+        demo_awards = [
+            ("Bronze Award", "Awarded for completing 20 volunteer hours.", 20),
+            ("Silver Award", "Awarded for completing 35 volunteer hours.", 35),
+            ("Gold Award", "Awarded for completing 50 volunteer hours.", 50),
+        ]
+        for name, description, hours in demo_awards:
+            existing = session.exec(select(Award).where(Award.name == name)).first()
+            if existing:
+                print(f"  skip  {name} (already exists)")
+                continue
+            session.add(Award(name=name, description=description, requiredHours=hours))
+            print(f"  create {name} ({hours} hours)")
+        session.commit()
+
     print(f"Seed done — created {created}, skipped {skipped}.")
     print("Login with bob/bobpass or admin/adminpass")
 

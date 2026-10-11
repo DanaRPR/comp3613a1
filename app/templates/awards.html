@@ -1,0 +1,31 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Awards{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <h1 class="h4 mb-3">Available Awards</h1>
+
+  {% for award in awards %}
+  <div class="card p-3 mb-3 shadow-sm d-flex flex-row align-items-center justify-content-between" style="max-width: 480px;">
+    <div>
+      <div class="fw-bold fs-5">{{ award.name | upper }}</div>
+      <div class="text-muted small">{{ award.requiredHours }} HOURS NEEDED</div>
+    </div>
+    <div>
+      {% if award.already_redeemed %}
+        <span class="badge bg-secondary px-3 py-2">REDEEMED</span>
+      {% elif award.available %}
+        <form method="POST" action="{{ url_for('award_redeem', award_id=award.id) }}" class="d-inline">
+          <button class="btn btn-sm px-4" type="submit"
+                  style="background: var(--brand-gold); border-color: var(--brand-gold); color: #1c2a3a;">REDEEM</button>
+        </form>
+      {% else %}
+        <span class="badge bg-light text-muted border px-3 py-2">UNAVAILABLE</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <a class="btn btn-outline-secondary mt-2" href="{{ url_for('progress_view') }}">Back to Progress</a>
+</div>
+{% endblock %}

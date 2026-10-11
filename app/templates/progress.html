@@ -1,0 +1,36 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Track Progress{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <h1 class="h4 mb-3">Hello, {{ user.username }}</h1>
+
+  <div class="card p-4 shadow-sm mb-4" style="max-width: 480px;">
+    <div class="text-muted text-uppercase small fw-semibold">Approved Hours</div>
+    <div class="display-6 fw-bold">{{ user.totalVolunteerHours }} Hours</div>
+    <div class="text-muted small mt-2">Progress till next award</div>
+    <div class="progress mt-1" style="height: 20px;">
+      {% set threshold = next_threshold if next_threshold else 50 %}
+      {% set pct = (user.totalVolunteerHours / threshold * 100) | int %}
+      {% if pct > 100 %}{% set pct = 100 %}{% endif %}
+      <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct }}%;"
+           aria-valuenow="{{ user.totalVolunteerHours }}" aria-valuemin="0" aria-valuemax="{{ threshold }}">
+        {{ user.totalVolunteerHours }}/{{ threshold }}
+      </div>
+    </div>
+  </div>
+
+  {% if next_award %}
+  <div class="card p-3 mb-4 shadow-sm d-flex flex-row align-items-center gap-3" style="max-width: 480px;">
+    <span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--brand-gold);">emoji_events</span>
+    <div>
+      <div class="text-muted text-uppercase small fw-semibold">Your Next Milestone</div>
+      <div class="fw-bold fs-5">{{ next_award.name | upper }}</div>
+      <div class="text-muted small">{{ next_award.requiredHours }} HOURS NEEDED</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <a class="btn btn-primary" href="{{ url_for('leaderboard_view') }}">Access Leaderboard</a>
+</div>
+{% endblock %}

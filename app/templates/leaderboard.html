@@ -1,0 +1,31 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <h1 class="h4 mb-3">Student Leaderboard</h1>
+
+  <div class="card shadow-sm" style="max-width: 640px;">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col" class="text-end">Hours</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in leaderboard %}
+        <tr class="{{ 'table-primary fw-bold' if entry.is_current else '' }}">
+          <td>{{ entry.rank }}</td>
+          <td>{{ entry.name }}{{ " (You)" if entry.is_current else "" }}</td>
+          <td class="text-end">{{ entry.hours }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <a class="btn btn-outline-secondary mt-3" href="{{ url_for('progress_view') }}">Back to Progress</a>
+</div>
+{% endblock %}

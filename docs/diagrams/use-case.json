@@ -1,0 +1,24 @@
+{
+  "system": "Student Awards",
+  "actors": [
+    {"name": "Student", "side": "left"},
+    {"name": "Administrator", "side": "right"}
+  ],
+  "use_cases": [
+    {
+      "name": "Submit Volunteer Hours",
+      "actors": ["Student", "Administrator"]
+    },
+    {
+      "name": "Track Progress",
+      "actors": ["Student"],
+      "extends": ["View Leaderboard"]
+    },
+    {"name": "View Leaderboard"},
+    {
+      "name": "Redeem Awards",
+      "actors": ["Student"],
+      "includes": ["Track Progress"]
+    }
+  ]
+}

@@ -63,14 +63,42 @@
 {% block content %}
 <div id="wrapper">
     <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <div class="brand-wordmark">FastStarter</div>
+        <div class="brand-wordmark">Student Awards</div>
 
         <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
             <li class="nav-item">
-                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app') }}"
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app') and not request.url.path.startswith('/app/submit') }}"
                    href="{{ url_for('user_home_view') }}">
                     <span class="material-symbols-outlined me-2">home</span>
                     Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/submit') }}"
+                   href="{{ url_for('submit_view') }}">
+                    <span class="material-symbols-outlined me-2">volunteer_activism</span>
+                    Submit Hours
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/progress') }}"
+                   href="{{ url_for('progress_view') }}">
+                    <span class="material-symbols-outlined me-2">trending_up</span>
+                    Progress
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/leaderboard') }}"
+                   href="{{ url_for('leaderboard_view') }}">
+                    <span class="material-symbols-outlined me-2">leaderboard</span>
+                    Leaderboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if request.url.path.startswith('/app/awards') }}"
+                   href="{{ url_for('awards_view') }}">
+                    <span class="material-symbols-outlined me-2">emoji_events</span>
+                    Awards
                 </a>
             </li>
             <li class="nav-item mt-auto">

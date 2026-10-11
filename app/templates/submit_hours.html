@@ -1,0 +1,31 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Submit Volunteer Hours{% endblock %}
+
+{% block subpage_content %}
+<div class="container-fluid py-2">
+  <h1 class="h4 mb-3">Submit Volunteer Hours</h1>
+
+  {% if success %}
+  <div class="alert alert-success" role="alert">{{ success }}</div>
+  {% endif %}
+  {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('submit_action') }}" class="card p-4 shadow-sm" style="max-width: 480px;">
+    <div class="mb-3">
+      <label class="form-label" for="date">Date & Time of Activity</label>
+      <input class="form-control" type="datetime-local" id="date" name="date" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="activity">Activity Completed</label>
+      <input class="form-control" type="text" id="activity" name="activity" placeholder="Insert activity..." required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="hours">Hours Completed</label>
+      <input class="form-control" type="number" id="hours" name="hours" min="1" step="1" required>
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Submit</button>
+  </form>
+</div>
+{% endblock %}

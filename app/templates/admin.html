@@ -3,7 +3,25 @@
 
 {% block subpage_content %}
 <div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Admin</h1>
-  <p class="text-muted mb-0">Admin workflow screens replace this shell in Phase 5 implement.</p>
+  <h1 class="h4 mb-3">Pending Submissions</h1>
+
+  {% if not pending %}
+  <p class="text-muted">No pending submissions.</p>
+  {% endif %}
+
+  {% for sub in pending %}
+  <div class="card p-3 mb-3 shadow-sm" style="max-width: 480px;">
+    <div class="mb-1"><strong>Student Name:</strong> {{ sub.student_name }}</div>
+    <div class="mb-3"><strong>Activity:</strong> {{ sub.activity }} - {{ sub.date.strftime('%B %-d, %Y') }}, {{ sub.hours }} Hours</div>
+    <div class="d-flex gap-2">
+      <form method="POST" action="{{ url_for('admin_approve', submission_id=sub.id) }}" class="d-inline">
+        <button class="btn btn-success btn-sm px-4" type="submit" style="background: var(--brand-approve); border-color: var(--brand-approve);">APPROVE</button>
+      </form>
+      <form method="POST" action="{{ url_for('admin_reject', submission_id=sub.id) }}" class="d-inline">
+        <button class="btn btn-danger btn-sm px-4" type="submit" style="background: var(--brand-reject); border-color: var(--brand-reject);">REJECT</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}
