@@ -14,7 +14,7 @@ async def awards_view(
     db: SessionDep,
 ):
     award_service = AwardService(AwardRepository(db))
-    awards = award_service.get_available_awards(user.id)
+    awards = award_service.get_available_awards(user.id, total_hours=user.totalVolunteerHours)
     return templates.TemplateResponse(
         request=request,
         name="awards.html",
@@ -30,5 +30,9 @@ async def award_redeem(
     award_id: int,
 ):
     award_service = AwardService(AwardRepository(db))
-    award_service.redeem(user.id, award.id)
+    try:
+        award_service.redeem(user.id, award_id, total_hours=user.totalVolunteerHours)
+    except ValueError:
+        pass
     return RedirectResponse(url="/app/awards", status_code=303)
+    
