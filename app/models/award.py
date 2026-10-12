@@ -13,7 +13,7 @@ class Award(AwardBase, table=True):
 
 
 class RedemptionBase(SQLModel):
-    redemptionDate: dateTime = Field(default_factory=datetime.now)
+    redemptionDate: datetime = Field(default_factory=datetime.now)
     status: str = Field(default="completed")
     student_id: int = Field(foreign_key="user.id")
     award_id: int = Field(foreign_key="award.id")
