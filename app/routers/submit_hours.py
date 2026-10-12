@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Request, Depends
+from datetime import datetime
+from typing import Annotated
+
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse
 from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep
@@ -27,7 +30,7 @@ async def submit_action(
     db: SessionDep,
     date: Annotated[datetime, Form()],
     hours: Annotated[int, Form(gt=0)],
-    activity: annotated[str, Form()]''
+    activity: Annotated[str, Form()],
 ):
     repo = VolunteerHoursRepository(db)
     service = VolunteerHoursService(repo)
