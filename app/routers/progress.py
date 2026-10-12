@@ -14,23 +14,31 @@ async def progress_view(
     db: SessionDep,
 ):
     leaderboard_service = LeaderboardService(LeaderboardRepository(db))
-    progress = leaderboard_service.get_progress(user.id)
+    data = leaderboard_service.get_progress(user.id)
+
     return templates.TemplateResponse(
         request=request,
         name="progress.html",
-        context={"user": user, "progress": progress},
+        context={
+            "user": user,
+            "progress": data["progress"],
+            "next_award": data["next_award"],
+            "next_threshold": data["next_threshold"],
+        },
     )
-    
+
+
 @router.get("/app/leaderboard", response_class=HTMLResponse)
 async def leaderboard_view(
     request: Request,
     user: AuthDep,
     db: SessionDep,
 ):
-   leaderboard_service = LeaderboardService(LeaderboardRepository(db))
-   leaderboard = leaderboard_service.get_leaderboard(user.id)
-   return templates.TemplateResponse(
-       request=request,
-       name="leaderboard.html",
-       context={"user": user, "leaderboard": leaderboard},
-   )
+    leaderboard_service = LeaderboardService(LeaderboardRepository(db))
+    leaderboard = leaderboard_service.get_leaderboard(user.id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="leaderboard.html",
+        context={"user": user, "leaderboard": leaderboard},
+    )
