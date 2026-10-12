@@ -3,7 +3,31 @@
 
 {% block subpage_content %}
 <div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Home</h1>
-  <p class="text-muted mb-0">Workflow screens replace this shell in Phase 5 implement.</p>
+  <h1 class="h4 mb-2">Welcome, {{ user.username }}</h1>
+  <p class="text-muted mb-4">Earn volunteer hours, track your progress, and redeem awards.</p>
+
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <a href="{{ url_for('submit_view') }}" class="card p-4 text-decoration-none shadow-sm h-100" style="color: inherit;">
+        <span class="material-symbols-outlined mb-2" style="font-size: 2rem; color: var(--brand-accent);">volunteer_activism</span>
+        <div class="fw-bold fs-5">Submit Hours</div>
+        <div class="text-muted small">Log your volunteer activity for approval.</div>
+      </a>
+    </div>
+    <div class="col-12 col-md-4">
+      <a href="{{ url_for('progress_view') }}" class="card p-4 text-decoration-none shadow-sm h-100" style="color: inherit;">
+        <span class="material-symbols-outlined mb-2" style="font-size: 2rem; color: var(--brand-accent);">trending_up</span>
+        <div class="fw-bold fs-5">Progress</div>
+        <div class="text-muted small">See your approved hours and next milestone.</div>
+      </a>
+    </div>
+    <div class="col-12 col-md-4">
+      <a href="{{ url_for('awards_view') }}" class="card p-4 text-decoration-none shadow-sm h-100" style="color: inherit;">
+        <span class="material-symbols-outlined mb-2" style="font-size: 2rem; color: var(--brand-gold);">emoji_events</span>
+        <div class="fw-bold fs-5">Awards</div>
+        <div class="text-muted small">Redeem awards you have earned.</div>
+      </a>
+    </div>
+  </div>
 </div>
 {% endblock %}
