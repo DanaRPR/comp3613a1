@@ -11,10 +11,13 @@
     },
     {
       "name": "Track Progress",
-      "actors": ["Student"],
-      "extends": ["View Leaderboard"]
+      "actors": ["Student"]
     },
-    {"name": "View Leaderboard"},
+    {
+      "name": "View Leaderboard",
+      "actors": ["Student"],
+      "extends": ["Track Progress"]
+    },
     {
       "name": "Redeem Awards",
       "actors": ["Student"],

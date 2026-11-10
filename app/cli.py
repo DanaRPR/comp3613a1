@@ -143,6 +143,7 @@ def cmd_report(args: argparse.Namespace) -> None:
         student_id=args.student_id,
         source=None if args.src is None else Path(args.src),
         output=None if args.output is None else Path(args.output),
+        assignment_title=args.title,
     )
     print()
     print("Report package:")
@@ -286,6 +287,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("--id", dest="student_id", required=True, help="Student ID (PDF only)")
     p_report.add_argument("--src", default=None, help="Markdown path (default: docs/report.md)")
     p_report.add_argument("--output", default=None, help="PDF path (default: docs/report.pdf)")
+    p_report.add_argument(
+        "--title",
+        default="COMP 3613 Assignment 1",
+        help="Assignment title printed in the PDF header",
+    )
     p_report.set_defaults(func=cmd_report)
 
     p_transcripts = sub.add_parser(

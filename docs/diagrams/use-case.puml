@@ -24,7 +24,8 @@ actor "Administrator" as Administrator
 Student --> Submit_Volunteer_Hours
 Submit_Volunteer_Hours <-- Administrator
 Student --> Track_Progress
-Track_Progress ..> View_Leaderboard : <<extend>>
+Student --> View_Leaderboard
+View_Leaderboard ..> Track_Progress : <<extend>>
 Student --> Redeem_Awards
 Redeem_Awards ..> Track_Progress : <<include>>
 

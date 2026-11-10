@@ -113,6 +113,7 @@ class ReportHTML2FPDF(HTML2FPDF):
 class ReportPDF(FPDF):
     HTML2FPDF_CLASS = ReportHTML2FPDF
     incomplete = False
+    assignment_title = "COMP 3613 Assignment 1"
 
     def header(self) -> None:
         if self.page_no() == 1:
@@ -123,7 +124,7 @@ class ReportPDF(FPDF):
             self.set_text_color(255, 255, 255)
             self.set_font("Body", "B", 20)
             self.set_xy(self.l_margin, 9)
-            self.cell(self.epw, 10, "COMP 3613 Assignment 1")
+            self.cell(self.epw, 10, self.assignment_title)
             self.set_font("Body", "", 11)
             self.set_xy(self.l_margin, 20)
             subtitle = "Individual report (incomplete)" if self.incomplete else "Individual report"
@@ -135,7 +136,7 @@ class ReportPDF(FPDF):
         self.set_y(10)
         self.set_font("Body", "", 9)
         self.set_text_color(*NAVY)
-        self.cell(self.epw, 6, "COMP 3613 Assignment 1", new_x="LMARGIN", new_y="NEXT")
+        self.cell(self.epw, 6, self.assignment_title, new_x="LMARGIN", new_y="NEXT")
         self.ln(1.5)
         self.set_draw_color(*GOLD)
         self.set_line_width(0.5)
@@ -171,6 +172,7 @@ def export_report(
     student_id: str,
     source: Path | None = None,
     output: Path | None = None,
+    assignment_title: str = "COMP 3613 Assignment 1",
 ) -> ReportExportResult:
     """Merge judge, dump transcripts, write PDF. Returns paths and status."""
     src = source or DEFAULT_REPORT
@@ -184,7 +186,7 @@ def export_report(
     if not src.is_file():
         src.parent.mkdir(parents=True, exist_ok=True)
         src.write_text(
-            "# COMP 3613 Assignment 1\n\nDraft. Export is allowed at any stage.\n",
+            f"# {assignment_title}\n\nDraft. Export is allowed at any stage.\n",
             encoding="utf-8",
         )
         print(f"Created {src} (empty draft).")
@@ -230,7 +232,7 @@ def export_report(
     app_url, logins, missing = _marker_access(markdown)
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    pdf = _new_pdf(bool(missing))
+    pdf = _new_pdf(bool(missing), assignment_title=assignment_title)
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         cover = _cover_html(clean_name, clean_id, app_url, logins, integrity, missing)
         body = _markdown_to_html(markdown, src.parent, Path(tmp))
@@ -470,9 +472,10 @@ def replace_competency_section(markdown: str, judge_markdown: str) -> str:
     return text
 
 
-def _new_pdf(incomplete: bool) -> ReportPDF:
+def _new_pdf(incomplete: bool, *, assignment_title: str) -> ReportPDF:
     pdf = ReportPDF(format="A4")
     pdf.incomplete = incomplete
+    pdf.assignment_title = assignment_title
     pdf.alias_nb_pages()
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.set_margins(16, 28, 16)
@@ -517,6 +520,8 @@ def _write_report_html(pdf: ReportPDF, markup: str) -> None:
         .replace("\u2019", "'")
         .replace("\u00a0", " ")
         .replace("\u2728", "*")
+        .replace("🧑", "")
+        .replace("🤖", "")
     )
     pdf.write_html(
         safe,
@@ -738,6 +743,9 @@ def _markdown_to_html(markdown: str, base: Path, tmp: Path) -> str:
             png = tmp / f"diagram-{diagram_n}.png"
             if _render_mermaid(blocks[i][1], png):
                 parts.append(_image_html(png))
+            elif (REPO_ROOT / "docs" / "diagrams" / "erd.png").is_file():
+                parts.append(_image_html(REPO_ROOT / "docs" / "diagrams" / "erd.png"))
+                print("Rendered ERD from docs/diagrams/erd.png because Mermaid CLI is unavailable.")
             else:
                 parts.append(
                     "<p><i>Mermaid source (install Node.js and re-run export to render the image):</i></p>"

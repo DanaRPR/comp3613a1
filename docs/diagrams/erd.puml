@@ -1,0 +1,66 @@
+@startuml
+!pragma layout smetana
+hide circle
+skinparam shadowing false
+skinparam entityBackgroundColor #FFFFFF
+skinparam entityBorderColor #1B365D
+skinparam entityFontColor #1E232D
+skinparam arrowColor #1B365D
+
+entity "Student (User role)" as Student {
+  * studentID : int <<PK>>
+  --
+  name : string
+  email : string
+  totalVolunteerHours : int
+}
+
+entity "Administrator (User role)" as Administrator {
+  * administratorID : int <<PK>>
+  --
+  name : string
+  email : string
+}
+
+entity VolunteerHours {
+  * submissionID : int <<PK>>
+  --
+  date : datetime
+  hours : int
+  activity : string
+  status : string
+  studentID : int <<FK>>
+  administratorID : int <<FK, nullable>>
+}
+
+entity Progress {
+  * progressID : int <<PK>>
+  --
+  totalHours : int
+  awardsEarned : int
+  studentID : int <<FK, unique>>
+}
+
+entity Award {
+  * awardID : int <<PK>>
+  --
+  name : string
+  description : string
+  requiredHours : int
+}
+
+entity Redemption {
+  * redemptionID : int <<PK>>
+  --
+  redemptionDate : datetime
+  status : string
+  studentID : int <<FK>>
+  awardID : int <<FK>>
+}
+
+Student ||--o{ VolunteerHours : submits
+Administrator |o--o{ VolunteerHours : reviews
+Student ||--o| Progress : has
+Student ||--o{ Redemption : redeems
+Award ||--o{ Redemption : "redeemed via"
+@enduml

@@ -1,315 +1,169 @@
-<!-- student-build:skill-integrity
-status: pass
-root: e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb
-expected_root: e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb
-mismatches: none
--->
-
-# COMP 3613 Assignment 1
-
-Draft this file with the Guide. **Update it after every phase milestone** before you pause. The use-case diagram is a UML PNG at `docs/diagrams/use-case.png`, linked from this file as `diagrams/use-case.png` (path relative to `docs/report.md`). The model diagram is Mermaid. **Embed wireframe images** as `wireframes/<file>` (files live in `docs/wireframes/`).
-
-Do not put your student ID in this file if you will commit it. The PDF cover adds your name and ID at export time.
-
-## Assigned project
-
-Student Awards (incentive system)
-
-## Three workflows
-
-### 1. Submit volunteer Hours (Student)
-
-### 2. Track Progress and View Leaderboard (Student)
-
-### 3. Redeem Awards (Student)
-
-## Use case diagram
-
-![Use case diagram](diagrams/use-case.png)
+# COMP 3613 Assignment 2 — Student Awards
 
-Student and Administrator share **Submit Volunteer Hours** (student submits; administrator approves or rejects). **View Leaderboard** `«extend»`s **Track Progress** (optional). **Redeem Awards** `«include»`s **Track Progress** (always required). Track Progress, View Leaderboard, and Redeem Awards are Student-only.
+## Project Description
 
-## Model diagram
+Student Awards is a web-based incentive system for student volunteering. Students submit volunteer hours for administrator review, track approved hours and leaderboard rankings, and redeem awards when they meet the required-hour thresholds. Administrators approve or reject pending submissions; approved hours update student totals and progress. The application uses FastAPI, SQLModel, server-rendered HTML views, and a layered route/service/repository/model structure.
 
-Phase 4 revision: removed `Award.points`, `Progress.pointsEarned`, and `Leaderboard.totalPoints` — hours drive rankings and eligibility. Leaderboard is a derived view, not a stored table.
+![Student Awards use case diagram](diagrams/use-case.png)
 
-```mermaid
-erDiagram
-  Student {
-    int studentID PK
-    string name
-    string email
-    int totalVolunteerHours
-  }
-  Administrator {
-    int administratorID PK
-    string name
-    string email
-  }
-  VolunteerHours {
-    int submissionID PK
-    date date
-    int hours
-    string activity
-    string status
-    int studentID FK
-    int administratorID FK
-  }
-  Award {
-    int awardID PK
-    string name
-    string description
-    int requiredHours
-  }
-  Progress {
-    int progressID PK
-    int totalHours
-    int awardsEarned
-    int studentID FK
-  }
-  Redemption {
-    int redemptionID PK
-    date redemptionDate
-    string status
-    int studentID FK
-    int awardID FK
-  }
-  Student ||--o{ VolunteerHours : submits
-  Student ||--|| Progress : tracks
-  Student ||--o{ Redemption : redeems
-  Award ||--o{ Redemption : "redeemed via"
-  Administrator ||--o{ VolunteerHours : reviews
-```
+**Use Case Diagram**
 
-## Wireframes
+Students submit volunteer hours, track progress, view the leaderboard, and redeem awards. Administrators review submissions by approving or rejecting them. Viewing the leaderboard is optional after tracking progress; redeeming an award includes checking progress.
 
-### Submit Volunteer Hours (Student + Admin)
+![Student Awards entity relationship diagram](diagrams/erd.png)
 
-![Submit Volunteer Hours](wireframes/wireframe%20final-1.png)
+**Entity Relationship Diagram**
 
-### Track Progress and View Leaderboard
+Student and Administrator denote role-specific User records in the implementation. A student may have no Progress row until their first approved submission; each existing Progress row belongs to one student. Pending VolunteerHours rows have no reviewing administrator; after approval or rejection, the row references the reviewing administrator.
 
-![Track Progress and View Leaderboard](wireframes/wireframe%20final-2.png)
+![Submit volunteer hours wireframe](wireframes/wireframe final-1.png)
 
-### Redeem Awards
+**Application Wireframe — Submit Volunteer Hours**
 
-![Redeem Awards](wireframes/wireframe%20final-3.png)
+![Progress and leaderboard wireframe](wireframes/wireframe final-2.png)
 
-### Coverage
+**Application Wireframe — Track Progress and View Leaderboard**
 
-<!-- student-build:wireframe-coverage
-use_case: Submit Volunteer Hours
-image: docs/wireframes/wireframe final-1.png
-covered: yes
--->
+![Redeem awards wireframe](wireframes/wireframe final-3.png)
 
-<!-- student-build:wireframe-coverage
-use_case: Track Progress and View Leaderboard
-image: docs/wireframes/wireframe final-2.png
-covered: yes
--->
+**Application Wireframe — Redeem Awards**
 
-<!-- student-build:wireframe-coverage
-use_case: Redeem Awards
-image: docs/wireframes/wireframe final-3.png
-covered: yes
--->
+## Test Plans
 
-### wireframe final 1
+### User Acceptance Test Plan and Completed Report
 
-![wireframe final 1](wireframes/wireframe final-1.png)
+The scenarios are based on the application wireframes. Actual results and PASS outcomes below are the recorded UAT results.
 
-### wireframe final 2
+### UAT-01 — Submit Volunteer Hours
 
-![wireframe final 2](wireframes/wireframe final-2.png)
+- **Role:** Student
+- **Expected:** The student sees a success message and the administrator's pending list shows the new submission.
+- **Actual:** The student successfully submitted 5 volunteer hours for a community clean-up activity and received a success message.
+- **Result:** PASS
 
-### wireframe final 3
+### UAT-02 — Administrator Approves Volunteer Hours
 
-![wireframe final 3](wireframes/wireframe final-3.png)
+- **Role:** Administrator, then Student
+- **Expected:** The submission is no longer pending and approved hours increase by the submitted amount.
+- **Actual:** The administrator approved the 5-hour Community clean-up submission. The submission disappeared from the pending submissions list.
+- **Result:** PASS
 
-## Theming
+### UAT-03 — Reject a Pending Submission
 
-**Wordmark:** Student Awards (no logo)
-**Font:** Inter (professional sans-serif)
-**Tone:** Professional but encouraging
-**Colors:**
-- Navy blue primary (`#1e4d8c` accent, `#0f1b2d` background)
-- Neutral surface (`#f4f5f7`) and ink (`#1c2a3a`)
-- Green (`#2e7d5b`) for approve actions
-- Red (`#c0392b`) for reject actions
-- Bronze (`#b07d4f`), Silver (`#9aa5b1`), Gold (`#d4a843`) for award tiers
+- **Role:** Administrator, then Student
+- **Expected:** The submission is no longer pending and the student's approved-hours total does not increase because of the rejection.
+- **Actual:** The administrator rejected the pending volunteer-hours submission. It disappeared from the pending submissions list, leaving no pending submissions.
+- **Result:** PASS
 
-**Applied to:** landing (`/`), login, register, authenticated sidebar. Brand tokens set in `app/static/css/app.css`. Starter demo pages removed.
+### UAT-04 — View Progress and Next Milestone
 
-## Implementation notes
+- **Role:** Student
+- **Expected:** The page displays the student's current approved hours and, when applicable, the next unredeemed award milestone.
+- **Actual:** The student's total volunteer hours increased to 10 hours after the administrator approved the 5-hour Community clean-up submission.
+- **Result:** PASS
 
-### Workflow 1: Submit Volunteer Hours (Student)
+### UAT-05 — View Leaderboard
 
-**Status:** Done
+- **Role:** Student
+- **Expected:** Students appear in descending approved-hours order; the administrator is excluded and the signed-in student is marked.
+- **Actual:** The leaderboard displayed bob in first place with 10 volunteer hours. Other students with 0 hours appeared below him.
+- **Result:** PASS
 
-**Implementation notes:**
-- SQLModel: `VolunteerHours` model with date, hours, activity, status (default "pending"), student_id FK, administrator_id FK (nullable).
-- Thin route: `/app/submit` GET renders form; POST binds form data, constructs Repository + Service, calls `service.submit_hours()`. No SQL in route.
-- Service creates submission with status "pending". Admin approve updates status, increments `User.totalVolunteerHours`, creates `Progress` on first approval.
-- Model revision: added `totalVolunteerHours` to User (was missing from ERD); added `Progress` model.
+### UAT-06 — Redeem an Eligible Award
 
-**Verify notes:** Student ran app, submitted form via sidebar "Submit Hours" link, received success message. Form matches wireframe.
+- **Role:** Student
+- **Expected:** The eligible award can be redeemed and is then displayed as redeemed.
+- **Actual:** The student reached 20 approved volunteer hours, making the Bronze Award eligible for redemption. The student clicked Redeem and the application displayed 'Redeemed', confirming the award was successfully redeemed.
+- **Result:** PASS
 
-**Admin approval (completes Workflow 1):** Admin home page shows pending submissions with APPROVE/REJECT buttons (green/red per theming). Approve updates status, increments student hours, creates Progress. Student sees updated hours on Progress page. Verified end-to-end.
+### UAT-07 — Attempt to Redeem an Unavailable Award
 
-### Workflow 2: Track Progress and View Leaderboard (Student)
+- **Role:** Student
+- **Expected:** An ineligible or already redeemed award cannot be redeemed.
+- **Actual:** The Bronze, Silver and Gold awards were marked as unavailable because the student had only 10 approved volunteer hours. The redemption buttons were disabled, preventing the student from attempting to redeem an award.
+- **Result:** PASS
 
-**Status:** Done
+**Separate award test scenarios:** UAT-06 and UAT-07 used different test states. For UAT-06, the student had 20 approved volunteer hours, making the Bronze Award eligible for redemption. For UAT-07, a separate test state had 10 approved volunteer hours, so the awards remained unavailable.
 
-**Implementation notes:**
-- Thin routes: `/app/progress` and `/app/leaderboard` construct LeaderboardRepository + LeaderboardService, call service methods, pass results to template. No SQL in routes.
-- Leaderboard is derived — repository queries User ordered by totalVolunteerHours, service builds ranked list with is_current flag.
-- Progress page shows approved hours, progress bar, "Access Leaderboard" button.
-- Leaderboard page shows ranked table with current user highlighted.
+The UAT outcomes are the recorded user observations. The automated test screenshots in this report are separate from the UAT evidence.
 
-**Verify notes:** Student saw 0 approved hours and bob on leaderboard (fresh account). Correct behaviour.
+### Unit Test Plan
 
-### Workflow 3: Redeem Awards (Student)
+The application seeds Bronze, Silver, and Gold with thresholds of 20, 35, and 50 approved hours, respectively. Test descriptions that use other values refer to test-specific awards, not the seeded award catalog. The unit tests use fake repositories, session objects, templates, and services. They do not use the SQLite integration fixture or connect to the configured application database. The descriptions below reflect the assertions made by the current test functions.
 
-**Status:** Done
+- **`test_submit_hours_adds_pending_submission()`** — Checks pending status, student ID, hours, activity, and that the fake repository stores the returned submission; it does not assert the date.
+- **`test_approve_updates_submission_and_totals()`** — Checks approved status, administrator ID, student total 10→18, progress total 15→23, and a fake-session add; it does not assert commit or persisted state.
+- **`test_approve_raises_value_error_for_missing_submission()`** — Expects `ValueError` matching `Submission not found`.
+- **`test_reject_marks_submission_rejected()`** — Checks rejected status, administrator ID, and a fake-session add; it does not assert unchanged student/progress totals.
+- **`test_get_available_awards_marks_eligible_and_not_redeemed()`** — Checks an award above its threshold is available and not already redeemed.
+- **`test_get_available_awards_marks_redeemed_and_ineligible()`** — Checks an under-threshold award that is also listed as redeemed is unavailable and already redeemed; the two conditions are combined.
+- **`test_redeem_raises_for_missing_award()`** — Expects `ValueError` matching `Award not found`.
+- **`test_redeem_raises_for_duplicate_redemption()`** — Expects `ValueError` matching `already redeemed` when the award ID is already redeemed.
+- **`test_get_leaderboard_assigns_rank_and_current_student()`** — Checks first-row rank, name, hours, and current-student flag, plus the second row's non-current flag; fake rows are already ordered.
+- **`test_get_progress_returns_next_award_and_threshold()`** — Checks the returned progress object, next unredeemed test award, and test-specific threshold of 25 hours (not the seeded Silver threshold).
+- **`test_submit_action_renders_value_error_message()`** — A fake service raises `ValueError("invalid submission")`; checks HTTP 400, the `submit_hours.html` template, and the error context text.
 
-**Implementation notes:**
-- Thin routes: `/app/awards` and `/app/awards/redeem/{award_id}` construct AwardRepository + AwardService, call service methods, redirect after redeem. No SQL in routes.
-- Hours stay after redemption — award is a milestone marker (student choice).
-- Service checks eligibility (hours >= requiredHours, not already redeemed), creates Redemption, increments Progress.awardsEarned.
-- Awards seeded: Bronze (20h), Silver (35h), Gold (50h).
-- Template shows REDEEM (gold button) / UNAVAILABLE / REDEEMED states per wireframe.
+### Integration Test Plan
 
-**Verify notes:** Student saw Bronze as REDEEMED after redeeming. Correct behaviour.
+Integration tests use SQLModel records and the shared `session` fixture, which creates a temporary SQLite database under `tmp_path`; they do not connect to the deployed database. The descriptions below reflect the assertions made by the current test functions.
 
-### Polish
+- **`test_submit_hours_creates_pending_submission()`** — Reads the created record and checks existence, pending status, student ID, and 5 hours; not date or activity.
+- **`test_approve_submission_updates_student_and_progress()`** — Checks approved status, stored student total of 8, progress total of 8, and zero awards earned; not administrator ID.
+- **`test_approve_submission_creates_progress_when_missing()`** — Checks approval and creation of a Progress row with 8 hours and zero awards earned.
+- **`test_approve_submission_rejects_duplicate_review()`** — Checks a second approval raises `ValueError` matching `already been reviewed`; not post-error totals.
+- **`test_approve_missing_submission_raises_value_error()`** — Expects `ValueError` matching `Submission not found`.
+- **`test_reject_submission_sets_rejected_status()`** — Checks rejected status and administrator ID 7; not unchanged totals.
+- **`test_reject_missing_submission_raises_value_error()`** — Expects `ValueError` matching `Submission not found`.
+- **`test_pending_submissions_include_student_names()`** — Checks two rows, expected student names, and expected pending activities; it does not directly assert the reviewed row's absence by ID/status.
+- **`test_get_available_awards_eligible_and_unredeemed()`** — Checks an above-threshold, unredeemed award is available and not already redeemed.
+- **`test_get_available_awards_marks_ineligible_and_redeemed()`** — Checks an under-threshold award that is also redeemed is unavailable and already redeemed; these conditions are combined.
+- **`test_redeem_award_creates_redemption_and_updates_progress()`** — Checks returned redemption status/student ID and persisted `Progress.awardsEarned == 1`; not an independent query for the redemption row.
+- **`test_redeem_award_does_not_create_missing_progress()`** — Checks returned redemption is completed and no Progress row exists afterward; not an independent query for a saved Redemption row.
+- **`test_redeem_award_rejects_insufficient_hours()`** — Expects `ValueError` matching `You need`; not database state afterward.
+- **`test_redeem_award_rejects_duplicate()`** — Checks a second redemption raises `ValueError` matching `already redeemed`; not the number of redemption rows afterward.
+- **`test_leaderboard_excludes_admins_and_orders_students_by_hours()`** — Checks returned names/order, first-row rank, and current-student flag; seeded names/order exclude the admin, but not all displayed hour values or tie handling.
+- **`test_get_progress_returns_next_unredeemed_award()`** — Checks progress total 30 and that the next award and threshold are `None` when the only award is redeemed.
+- **`test_get_progress_returns_first_unredeemed_award()`** — Checks the test award named Silver is selected after Bronze is redeemed and the test-specific threshold is 25 hours (not the seeded Silver threshold of 35); not the returned progress object or total.
 
-- Added "Your Next Milestone" card to Progress page (was missing from wireframe).
-- Progress bar now computes the actual next unredeemed award threshold instead of hardcoded 50.
-- Fixed: awards were not seeded until re-running `python manage.py init` after adding award seeding to CLI.
+## Implementation
 
-## Deployed app
+The application implements the Student Awards student and administrator workflows using FastAPI views and SQLModel-backed services and repositories. Authenticated student routes cover volunteer-hour submission, progress, leaderboard, and awards. Administrator-only routes cover pending-submission review. Service logic applies approval, progress, leaderboard, award-eligibility, and redemption rules; routers handle request binding, access dependencies, rendered responses, and redirects.
 
-Phase 6. Public Render URL (not localhost). Markers open this to mark the three workflows.
+The workflow views use `GET` for displaying pages and `POST` for submissions and actions. Form actions that complete through navigation redirect back to the relevant page. The student and administrator pages are protected by their respective authentication dependencies.
 
-https://comp3613a1-pln2.onrender.com
+### Deployed Application
 
-## Logins
+[https://comp3613a1-pln2.onrender.com](https://comp3613a1-pln2.onrender.com)
 
-Every account a marker needs, including extra users you added. Starter accounts:
+Demo accounts: `bob / bobpass` (student) and `admin / adminpass` (administrator).
 
-- bob / bobpass — regular user
-- admin / adminpass — admin
+### GitHub Repository
 
-## YouTube URL
+[https://github.com/DanaRPR/comp3613a1](https://github.com/DanaRPR/comp3613a1)
 
-https://youtu.be/7t-L2V9G9eM
+### Test Implementation and API Test Collection
 
-## GitHub
+- **Unit tests:** 11 pytest tests in `tests/unit/`.
+- **Integration tests:** 17 pytest tests in `tests/integration/`.
+- **CLI command:** `PYTHONPATH=. PYTHONDONTWRITEBYTECODE=1 .venv/bin/pytest -p no:cacheprovider -q`
+- **2026-11-10:** 11 unit + 17 integration tests; 28 passed, 0 failed, 0 skipped.
+- **Postman collection:** [student-awards-api-tests.postman_collection.json](../postman/student-awards-api-tests.postman_collection.json), exported as a Postman Collection v2.1 JSON file with 21 requests. It covers login and registration, student and administrator pages/actions, form validation, and access-control responses.
+- **Postman run evidence:** The saved collection-run screenshots show 24 passed, 0 failed, and 0 errors. Postman was not rerun for this PDF revision.
 
-https://github.com/DanaRPR/comp3613a1
+![Pytest unit test results: 11 passed](test-evidence/unit-tests.png)
 
-## Agent used
+**Unit Test Report**
 
-OpenCode (mimo-v2.6-flash-free) with student-build skill. Phases 1–3 used Cursor.
+![Pytest integration test results: 17 passed](test-evidence/integration-tests.png)
 
-## Account email
+**Integration Test Report**
 
-dana.ramtahal@my.uwi.edu
+![Postman collection run report: first screenshot](test-evidence/postman-tests-1.png)
 
-## Session transcripts
+**Postman Collection Run Report**
 
-Filled when the Guide builds the report: the agent writes chat markdown into `docs/transcripts/`; `python manage.py report` packages them.
+![Postman collection run report: second screenshot](test-evidence/postman-tests-2.png)
 
-Guide packaged **6** chat(s) in `docs/transcripts/` (and `docs/transcripts.zip`).
+![Postman collection run report: third screenshot](test-evidence/postman-tests-3.png)
 
-Index: [docs/transcripts/INDEX.md](transcripts/INDEX.md)
-
-- [`phase-1-workflows`](transcripts/phase-1-workflows.md)
-- [`phase-2-use-case`](transcripts/phase-2-use-case.md)
-- [`phase-3-model`](transcripts/phase-3-model.md)
-- [`phase-3.1-model`](transcripts/phase-3.1-model.md)
-- [`phase-4-wireframes`](transcripts/phase-4-wireframes.md)
-- [`phase-5-implement-polish`](transcripts/phase-5-implement-polish.md)
-
-## Competency (student-judge)
-
-Filled by Guide from the student-judge run when this report was built.
-
-**Judged at:** 2026-10-12T13:00:00
-**Evidence pass:** re-read native chats + current docs/report.md (prior judge.md ignored)
-
-# student-judge competency report
-
-**Student / session:** Student Awards — COMP 3613 Assignment 1
-**Artifact:** Guide chats for this project (Cursor + OpenCode) and `docs/transcripts/` dump
-**Phases in evidence:** 1–6 (COMP 3613; Phase 5 polish, Phase 6 deploy)
-
-### Totals
-| | Count / value |
-|--|--|
-| Metrics on rubric | 12 (M1–M12) |
-| N/A (excluded) | 0 |
-| Metrics scored | 12 |
-| Scoreable max | 48 |
-| Awarded total | 45 / 48 |
-| **Overall (avg of scored)** | **3.75 / 4** |
-| Impression mark | 17 / 20 |
-
-## Scorecard
-
-| ID | Metric | Score / 4 | In avg | Evidence |
-|----|--------|----------:|:------:|----------|
-| M1 | Phase discipline | 3 | yes | Each design phase in its own chat; Phase 5 theme→build→polish before Phase 6; no app code before wireframes. Minor: Phase 3 split across Cursor + OpenCode due to usage limit. |
-| M2 | Problem framing | 4 | yes | "Student Awards" + three `Feature (user)` lines; answered include/extend ("view leaderboard is optional after track progress", "it is always required"); identified Administrator; "Submit Volunteer Hours is shared by the Student and Administrator". |
-| M3 | Decision ownership | 4 | yes | Chose project, workflows, relationships ("1 award can be redeemed many times…each redemption is for one award"), corrected own wireframe ("that was a mistake, i updated the wireframe"), chose hours over points, chose "b" (progress on first approval), "a" (all students on leaderboard), "a" (hours stay). |
-| M4 | Artefact-before-code | 4 | yes | Implemented ERD + wireframes as spec; requested home page to match wireframe; model revised when wireframes showed hours-only ranking. |
-| M5 | Verification habit | 3 | yes | Verified each workflow after Guide asked: "yes i got that message anc yes the form matches the wireframe", "1. I got the approval message…5. i see the progress hours", "yes i see bronze as redeemed". Some notes brief but present. |
-| M6 | Assignment fit | 4 | yes | Thin routes → services → repositories → models throughout; reused FastStarter auth/nav; theme applied to landing/login/register; deployed to Render. No SQL in routers. |
-| M7 | Slice explanation | 4 | yes | Completed SQLModel + thin route snippets for all 3 workflows; all `architecture_ok: yes`; explained choices in own words; code-checks passed. |
-| M8 | Prompt quality | 4 | yes | Phase-tagged prompts; "The Student home page still shows the starter text…Can you replace it with a welcome message and 3 cards linking to submit hours, progress and rewards? Don't change anything else" — concrete, scoped polish request. |
-| M9 | Response to pushback | 4 | yes | When Guide flagged missing milestone card: "yes" → verified fix ("okay i see it now"). After deploy: requested home page replacement. Kept refining beyond first build. |
-| M10 | Integrity | 4 | yes | No suspicion flags; no paste-back; no skill edits; all decisions in own words. |
-| M11 | Provenance continuity | 4 | yes | Solutions grew from this thread's workflows, model, and wireframes; no orphan code. |
-| M12 | Sincerity trajectory | 4 | yes | No suspicion needed; consistent honest engagement across all phases. |
-
-## Strengths
-- Student named the project and three workflows, answered include/extend and shared-use-case questions, and identified the Administrator role through edge-case reconsider.
-- Owned all relationship choices and corrected own wireframe when Guide flagged a mismatch (25→20 hours).
-- Completed SQLModel and thin route snippets for all three workflows with `architecture_ok: yes` — routes call services, no SQL in routers.
-- Verified every workflow after Guide asked and reported what they saw.
-- Steered polish: accepted milestone card fix, requested home page replacement after deploy.
-- Deployed to Render with URL and marker logins in report.
-
-## Gaps (priority order)
-1. Some verify notes were brief ("it looks good", "everything looks good") — solid but not detailed mismatch hunting. Minor; per-workflow notes were still present.
-
-## Phase gate status
-| Phase | Status | Note |
-|-------|--------|------|
-| 1 | met | Project + 3 `Feature (user)` lines in student's words |
-| 2 | met | UML PNG drafted; include/extend, shared use case, Administrator gap all answered |
-| 3 | met | Student-named entities/properties; relationships owned; Mermaid ERD drafted |
-| 4 | met | 3 wireframes embedded; model revised (points removed); coverage blocks present |
-| 5 | met | Theme applied; 3 workflows built with snippets; polish engaged (milestone card, home page) |
-| 6 | met | Render URL + marker logins in report |
-
-## Recommended next practice
-- When verifying, note specific UI details that differ from the wireframe (spacing, labels, colours) rather than "looks good" — this builds mismatch-hunting habit.
-
-## Integrity note
-- Clean
-## Provenance flags
-- None
-## Sincerity log summary
-- Blocks found: 0 | max round: N/A | min/mean/final confidence: N/A | trend: N/A | cleared: N/A (no suspicion raised)
-## Skips
-- Skips: 0/3 used (from Guide). Skips are not an integrity failure.
-
-## Skill integrity
-
-Course skills are hashed at export and compared to `.agents/skills.lock.json`. Do not edit `.agents/skills/`, `.cursor/skills/`, or `AGENTS.md`.
-
-- Status: **pass**
-- Root: `e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb`
-- none
+![Postman collection run report: fourth screenshot](test-evidence/postman-tests-4.png)

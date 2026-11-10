@@ -46,7 +46,7 @@ async def submit_action(
         return templates.TemplateResponse(
             request=request,
             name="submit_hours.html",
-            context={"user": user, "error": strr(exc)},
+            context={"user": user, "error": str(exc)},
             status_code=400,
         )
 

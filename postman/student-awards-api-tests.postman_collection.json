@@ -1,0 +1,885 @@
+{
+  "info": {
+    "name": "Student Awards API Tests",
+    "description": "HTML-based regression checks for the Student Awards app. Postman follows redirects by default, so tests assert the final page. Default baseUrl targets http://127.0.0.1:8000. Demo accounts: bob/bobpass and admin/adminpass. Unauthenticated requests render the 401 page with status 200. The ID-1 approval, rejection, and redemption requests only test redirect behavior; they do not prove a record changed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "student-awards-api-tests"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "student_access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth - Student Login (valid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "bob"
+            },
+            {
+              "key": "password",
+              "value": "bobpass"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student login ends on the dashboard after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Welcome, bob');",
+              "});",
+              "pm.test('student access token cookie is set', function () {",
+              "  const token = pm.cookies.get('access_token');",
+              "  pm.expect(token, 'access_token cookie exists').to.be.a('string').and.not.empty;",
+              "  pm.collectionVariables.set('student_access_token', token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Student Login (invalid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "bob"
+            },
+            {
+              "key": "password",
+              "value": "wrongpass"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('invalid login ends on the login form with an error', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Incorrect username or password');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Admin Login (valid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "admin"
+            },
+            {
+              "key": "password",
+              "value": "adminpass"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('admin login ends on the review page after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Pending Submissions');",
+              "});",
+              "pm.test('admin access token cookie is set', function () {",
+              "  const token = pm.cookies.get('access_token');",
+              "  pm.expect(token, 'access_token cookie exists').to.be.a('string').and.not.empty;",
+              "  pm.collectionVariables.set('admin_access_token', token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Logout",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{admin_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/logout",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "logout"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('logout ends on login form and removes the cookie', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Sign in to continue');",
+              "  pm.expect(pm.cookies.get('access_token')).to.be.undefined;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public - Display Landing Page",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('landing page loads', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "API - List Users",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('users API returns a JSON array', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+              "  pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Display Login Form",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('login page loads', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Display Registration Form",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/register",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('register page loads', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Register New User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "postman_{{$guid}}"
+            },
+            {
+              "key": "email",
+              "value": "postman_{{$guid}}@example.com"
+            },
+            {
+              "key": "password",
+              "value": "PostmanPass123!"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/register",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('registration ends on login form after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Registration completed! Sign in now!');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - View User Home",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student cookie grants access to the dashboard', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Welcome, bob');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - View Submit Hours Form",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app/submit",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "submit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student cookie grants access to submit page', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Submit Volunteer Hours');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - Submit Valid Hours",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "date",
+              "value": "2026-02-01T10:00:00"
+            },
+            {
+              "key": "hours",
+              "value": "5"
+            },
+            {
+              "key": "activity",
+              "value": "Reading mentor"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/app/submit",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "submit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('valid submission returns HTML page with 200 status', function () { pm.response.to.have.status(200); });",
+              "pm.test('success message is rendered in response HTML', function () { pm.expect(pm.response.text()).to.include('Submitted'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - Submit Invalid Hours (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "date",
+              "value": "2026-02-01T10:00:00"
+            },
+            {
+              "key": "hours",
+              "value": "0"
+            },
+            {
+              "key": "activity",
+              "value": "Invalid hours"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/app/submit",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "submit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('invalid hours are rejected before business logic runs', function () { pm.response.to.have.status(422); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - View Progress",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app/progress",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "progress"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student cookie grants access to progress page', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Approved Hours');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - View Leaderboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app/leaderboard",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "leaderboard"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student cookie grants access to leaderboard', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Student Leaderboard');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - View Awards",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app/awards",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "awards"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('student cookie grants access to awards page', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Available Awards');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - Redeem Award (redirect behavior)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{student_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/app/awards/redeem/1",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "awards",
+            "redeem",
+            "1"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('award redemption attempt ends on awards page after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Available Awards');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - View Review Page",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{admin_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "admin"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('admin cookie grants access to review page', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Pending Submissions');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Approve Submission (redirect behavior)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{admin_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/approve/1",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "admin",
+            "approve",
+            "1"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('approval attempt ends on admin review page after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Pending Submissions');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Reject Submission (redirect behavior)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "access_token={{admin_access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/reject/1",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "admin",
+            "reject",
+            "1"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('rejection attempt ends on admin review page after redirect', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Pending Submissions');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access Control - Protected route without cookie",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/app/progress",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "app",
+            "progress"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('unauthenticated request renders the unauthorized page', function () {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.text()).to.include('Unauthorized');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

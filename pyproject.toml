@@ -16,6 +16,10 @@ dependencies = []
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+markers = [
+    "unit: isolates service logic with controlled inputs or stub repositories",
+    "integration: exercises services with the SQLModel database and repository/session state",
+]
 
 [tool.setuptools]
 packages = ["app"]
